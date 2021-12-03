@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+
+import sys
+
+class SubPosition:
+    def __init__(self) -> None:
+        self.horizontal = 0
+        self.depth = 0
+        self.aim = 0
+
+    def up(self, x):
+        self.aim -= x
+
+    def down(self, x):
+        self.aim += x
+
+    def forward(self, x):
+        self.horizontal += x
+        self.depth += self.aim * x
+
+data = [(x[0], int(x[1])) for x in [x.split() for x in sys.stdin.readlines()]]
+
+sub = SubPosition()
+for operation, value in data:
+    getattr(sub, operation)(value)
+
+print(sub.horizontal, sub.depth, sub.aim)
+print(sub.horizontal * sub.depth)
