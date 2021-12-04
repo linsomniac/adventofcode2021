@@ -1,0 +1,98 @@
+#!/usr/bin/env python3
+
+import sys
+
+do_debug = False
+def debug(s):
+    global do_debug
+    if not do_debug:
+        return
+    sys.stdout.write(s)
+
+
+class Board:
+    def __init__(self) -> None:
+        'Read a board from stdin, raise ValueError if no board can be read'
+        self.marked = dict()
+        self.unmarked = dict()
+        self.by_number = dict()
+
+        for row_number in range(5):
+            line = sys.stdin.readline()
+            if not line: 
+                raise ValueError('No board found')
+            for column_number, value in zip(range(5), line.strip().split()):
+                self.unmarked[row_number, column_number] = value
+                self.by_number[value] = (row_number, column_number)
+                debug('%2s ' % value)
+            debug('\n')
+        sys.stdin.readline()
+        debug('\n')
+
+    def mark(self, value):
+        'Mark the board if it has the specified value'
+        if not value in self.by_number:
+            return
+        r, c = self.by_number[value]
+        del(self.unmarked[(r, c)])
+        self.marked[(r, c)] = value
+
+    def is_marked(self, row, column):
+        debug('is_marked(%s, %s) = %s\n' % (row, column, (row, column) in self.marked))
+        return (row, column) in self.marked
+
+    def is_winner(self):
+        'Check to see if this board is a winner'
+        for i in range(5):
+            if (
+                    self.is_marked(i, 0) and
+                    self.is_marked(i, 1) and
+                    self.is_marked(i, 2) and
+                    self.is_marked(i, 3) and
+                    self.is_marked(i, 4)):
+                debug('Is Winner ROW\n')
+                return True
+            if (
+                    self.is_marked(0, i) and
+                    self.is_marked(1, i) and
+                    self.is_marked(2, i) and
+                    self.is_marked(3, i) and
+                    self.is_marked(4, i)):
+                debug('Is Winner COLUMN\n')
+                return True
+        return False
+
+
+def main():
+    global do_debug
+
+    called_numbers = sys.stdin.readline().strip().split(',')
+    sys.stdin.readline()
+
+    boards = []
+    try:
+        while board := Board():
+            boards.append(board)
+    except ValueError:
+        pass
+
+    for call in called_numbers:
+        debug('CALL: %s' % call)
+        new_boards = boards.copy()
+        for board in boards:
+            debug('MARKED: %s\n' % board.marked)
+            debug('UNMARKED: %s\n' % board.unmarked)
+            board.mark(call)
+            debug('MARKED: %s\n' % board.marked)
+            debug('UNMARKED: %s\n' % board.unmarked)
+            if board.is_winner():
+                unmarked = sum([int(x) for x in board.unmarked.values()])
+                print(unmarked, call)
+                print(unmarked * int(call))
+                debug('%s\n' % ((boards, board),))
+                new_boards.remove(board)
+                debug('%s\n' % boards)
+            debug('MARKED: %s' % board.marked)
+        boards = new_boards
+
+main()
